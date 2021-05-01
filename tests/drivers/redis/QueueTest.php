@@ -58,6 +58,27 @@ class QueueTest extends CliTestCase
         $this->assertSimpleJobLaterDone($job, 2);
     }
 
+    public function testLaterFifo()
+    {
+        $this->startProcess(['php', 'yii', 'queue/listen', '1']);
+
+        $job1 = $this->createSimpleJob('1');
+        $this->getQueue()->delay(2)->push($job1);
+
+        $job2 = $this->createSimpleJob('2');
+        $this->getQueue()->delay( 2)->push($job2);
+
+        $job3 = $this->createSimpleJob('3');
+        $this->getQueue()->delay(2)->push($job3);
+
+        $this->assertSimpleJobLaterDone($job1, 2);
+        $this->assertSimpleJobLaterDone($job2, 2);
+        $this->assertSimpleJobLaterDone($job3, 2);
+
+        $this->assertSimpleJobDelayedFifoDone($job1, $job2, 'Job1 < Job2');
+        $this->assertSimpleJobDelayedFifoDone($job2, $job3, 'Job2 < Job3');
+    }
+
     public function testRetry()
     {
         $this->startProcess(['php', 'yii', 'queue/listen', '1']);

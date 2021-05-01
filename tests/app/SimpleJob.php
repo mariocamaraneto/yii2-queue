@@ -19,10 +19,11 @@ use yii\queue\JobInterface;
 class SimpleJob extends BaseObject implements JobInterface
 {
     public $uid;
+    public $data;
 
     public function execute($queue)
     {
-        file_put_contents($this->getFileName(), '');
+        file_put_contents($this->getFileName(), $this->data);
     }
 
     public function getFileName()

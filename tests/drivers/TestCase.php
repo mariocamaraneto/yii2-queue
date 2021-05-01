@@ -26,10 +26,11 @@ abstract class TestCase extends \tests\TestCase
     /**
      * @return SimpleJob
      */
-    protected function createSimpleJob()
+    protected function createSimpleJob($data='')
     {
         return new SimpleJob([
             'uid' => uniqid(),
+            'data'=> $data
         ]);
     }
 
@@ -63,6 +64,18 @@ abstract class TestCase extends \tests\TestCase
         }
         $this->assertFileExists($job->getFileName());
         $this->assertGreaterThanOrEqual($time, filemtime($job->getFileName()));
+    }
+
+    /**
+     * @param SimpleJob $job
+     * @param int $delay
+     */
+    protected function assertSimpleJobDelayedFifoDone(SimpleJob $job1, SimpleJob $job2, $msg)
+    {
+        $this->assertFileExists($job1->getFileName());
+        $this->assertFileExists($job2->getFileName());
+
+        $this->assertGreaterThanOrEqual(file_get_contents($job1->getFileName()), file_get_contents($job2->getFileName()), $msg);
     }
 
     /**
