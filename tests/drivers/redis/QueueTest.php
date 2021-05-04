@@ -58,25 +58,33 @@ class QueueTest extends CliTestCase
         $this->assertSimpleJobLaterDone($job, 2);
     }
 
-    public function testLaterFifo()
+    public function testHeavyJobDelayedFifo()
     {
         $this->startProcess(['php', 'yii', 'queue/listen', '1']);
 
-        $job1 = $this->createSimpleJob('1');
-        $this->getQueue()->delay(2)->push($job1);
+        $delay = 1;
+        $load = $delay+1;
+        $initialTimeFirstBatch = time();
 
-        $job2 = $this->createSimpleJob('2');
-        $this->getQueue()->delay( 2)->push($job2);
+        $job1 = $this->createHeavyJob($load);
+        $this->getQueue()->delay($delay)->push($job1);
 
-        $job3 = $this->createSimpleJob('3');
-        $this->getQueue()->delay(2)->push($job3);
+        $job2 = $this->createHeavyJob($load);
+        $this->getQueue()->delay($delay)->push($job2);
 
-        $this->assertSimpleJobLaterDone($job1, 2);
-        $this->assertSimpleJobLaterDone($job2, 2);
-        $this->assertSimpleJobLaterDone($job3, 2);
+        sleep($delay);
 
-        $this->assertSimpleJobDelayedFifoDone($job1, $job2, 'Job1 < Job2');
-        $this->assertSimpleJobDelayedFifoDone($job2, $job3, 'Job2 < Job3');
+        $initialTimeSecondBatch = time();
+        $job3 = $this->createHeavyJob($load);
+        $this->getQueue()->delay($delay)->push($job3);
+
+
+        $this->assertHeavyJobLaterDone($job1, $delay, $initialTimeFirstBatch);
+        $this->assertHeavyJobLaterDone($job2, $delay, $initialTimeFirstBatch);
+        $this->assertHeavyJobLaterDone($job3, $delay, $initialTimeSecondBatch);
+
+        $this->assertHeavyJobDelayedFifoDone($job1, $job2, 'Job1 < Job2');
+        $this->assertHeavyJobDelayedFifoDone($job2, $job3, 'Job2 < Job3');
     }
 
     public function testRetry()

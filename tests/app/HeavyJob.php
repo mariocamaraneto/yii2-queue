@@ -16,13 +16,15 @@ use yii\queue\JobInterface;
  *
  * @author Roman Zhuravlev <zhuravljov@gmail.com>
  */
-class SimpleJob extends BaseObject implements JobInterface
+class HeavyJob extends BaseObject implements JobInterface
 {
     public $uid;
+    public $load;
 
     public function execute($queue)
     {
         file_put_contents($this->getFileName(), '');
+        sleep($this->load);
     }
 
     public function getFileName()
